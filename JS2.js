@@ -2,33 +2,50 @@ var gridLocation = [
   [0, 0],
   [0, 0]
 ];
+var grid1 = [
+  [1, 2, -10, -14, 20],
+  [0, 2, 4, 8, 9],
+  [4, 2, 16, -1, -3],
+  [3, 6, 10, 11, -3],
+  [0, -5, -15, 3, 13]
+];
 
-//for(var x=0)
-const Http = new XMLHttpRequest();
-const url='https://sentithinkfunction.azurewebsites.net/api/GetLocationWordFrequiencies?code=Y4U0ud8b3FeN//rh1uMbguWe2c47qvYRTy6dfGeahC6uKYf3UFvbgQ==&X=1&Y=1';
-Http.open("GET", url);
-Http.send();
-
-Http.onreadystatechange = function()
+for(var x=0; x<4; x++)
 {
-  if(this.readyState == 4 && this.status == 200)
+  const Http = new XMLHttpRequest();
+  const urlList = ['https://sentithinkfunction.azurewebsites.net/api/GetLocationWordFrequiencies?code=Y4U0ud8b3FeN//rh1uMbguWe2c47qvYRTy6dfGeahC6uKYf3UFvbgQ==&X=0&Y=0',
+                   'https://sentithinkfunction.azurewebsites.net/api/GetLocationWordFrequiencies?code=Y4U0ud8b3FeN//rh1uMbguWe2c47qvYRTy6dfGeahC6uKYf3UFvbgQ==&X=0&Y=1',
+                   'https://sentithinkfunction.azurewebsites.net/api/GetLocationWordFrequiencies?code=Y4U0ud8b3FeN//rh1uMbguWe2c47qvYRTy6dfGeahC6uKYf3UFvbgQ==&X=1&Y=0',
+                   'https://sentithinkfunction.azurewebsites.net/api/GetLocationWordFrequiencies?code=Y4U0ud8b3FeN//rh1uMbguWe2c47qvYRTy6dfGeahC6uKYf3UFvbgQ==&X=1&Y=1']
+
+  Http.open("GET", urlList[x]);
+  Http.send();
+
+  Http.onreadystatechange = function()
   {
-    //console.log(Http.responseText);
-    var data = JSON.parse(Http.responseText);
-    console.log(data);
-
-    console.log(data.length)
-
-    for(var row in data)
+    if(this.readyState == 4 && this.status == 200)
     {
-      var xCoord = data[row]["X"];
-      var yCoord = data[row]["Y"];
-      var frequency = data[row]["FREQUENCY"];
-      var sentiment = data[row]["SENTIMENT"];
-      var totalSentiment = frequency * sentiment;
-      console.log("Sentiment is " + totalSentiment);
+      //console.log(Http.responseText);
+      var data = JSON.parse(Http.responseText);
+      //console.log(data);
+
+      //console.log(data.length)
+      console.log(data)
+      for(var row in data)
+      {
+        var xCoord = data[row]["X"];
+        //console.log(data[row]);
+        var yCoord = data[row]["Y"];
+        var frequency = data[row]["FREQUENCY"];
+        //console.log("Frequency is " + frequency);
+        var sentiment = data[row]["SENTIMENT"];
+        var totalSentiment = frequency;
+        //console.log("Sentiment is " + totalSentiment);
+        gridLocation[xCoord][yCoord] += totalSentiment;
+        //console.log(gridLocation[xCoord][yCoord]);
+        createGrid(gridLocation);
+      }
     }
-    gridLocation[xCoord][yCoord] = totalSentiment;
   }
 }
 
@@ -56,50 +73,14 @@ var column = row.selectAll(".square")
   .style("fill", "white")
   .style("stroke", "black")
 
-var textGrid = d3.select("#text")
-    .append("svg")
-    .attr("width", "1000px")
-    .attr("height", "1000px");
-
-var textRow = textGrid.selectAll(".row")
-    .data(gridData)
-    .enter().append("g")
-    .attr("class", "r")
-
-var textColumn = textRow.selectAll(".text")
-    .data(function(d) {return d;})
-    .enter().append("text")
-    .attr("class", "text")
-    .attr("x", function(d){return d.x; })
-    .attr("y", function(d){return d.y; })
-    .attr("id", function(d){return d.id; })
-    .text("Hello")
-    .style("fill", "red")
-
-
-createGrid(gridLocation);
-
-//console.log("The id for 3,3 is " + createGrid(sData)[2][2]["id"])
-/*var column2 = row.selectAll(".square")
-  .data(function(d) {return d;})
-  .enter().append("text")
-  .attr("class", "text")
-  .attr("x", function(d){return d.x; })
-  .attr("y", function(d){return d.y; })
-  .attr("font-size", "50px")
-  .attr("id", function(d){return d.id; })
-  .text("10")
-  .style("fill", "red")*/
+//createGrid(grid1)
 
 function createGrid(sentimentData)
 {
-  //console.log("The length of the row is " + sentimentData.length)
-  //console.log("The length of the column is " + sentimentData[0].length)
-
   //essential variables
-  var startingX = 200;
-  var currentX = 200;
-  var currentY = 200
+  var startingX = 400;
+  var currentX = 400;
+  var currentY = 100
   var width = 100;
   var height = 100;
   var sentimentArray = sentimentData;
@@ -128,13 +109,19 @@ function createGrid(sentimentData)
       //pushes the array with information to each row of the map
       map[row].push(infoArray);
 
-      if((map[row][column]["sentiment"] > 0) && (map[row][column]["sentiment"] < 10))
+      var greenNess = map[row][column]["sentiment"];
+
+      if((map[row][column]["sentiment"] > 0) && (map[row][column]["sentiment"] < 150))
       {
-        d3.select("[id=" + "'" +rowNum+ ',' +colNum+ "'" + "]").style("fill", '#00ff7b');
+        d3.select("[id=" + "'" +rowNum+ ',' +colNum+ "'" + "]").style("fill", "#9df5c2");
       }
-      if(map[row][column]["sentiment"] > 10)
+      if((map[row][column]["sentiment"] > 150) && (map[row][column]["sentiment"] < 300))
       {
-        d3.select("[id=" + "'" +rowNum+ ',' +colNum+ "'" + "]").style("fill", '#25b86c');
+        d3.select("[id=" + "'" +rowNum+ ',' +colNum+ "'" + "]").style("fill", "#45f790");
+      }
+      if(map[row][column]["sentiment"] > 300)
+      {
+        d3.select("[id=" + "'" +rowNum+ ',' +colNum+ "'" + "]").style("fill", "#00ff48");
       }
       if((map[row][column]["sentiment"] < 0) && (map[row][column]["sentiment"] > -10))
       {
